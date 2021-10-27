@@ -1,0 +1,28 @@
+partial record variables
+  constant Modelica.Units.SI.Acceleration g = 9.81 "[m/s2] Gravitational acceleration in Z-axis";
+  //Sprung body parameters
+  parameter Modelica.Units.SI.Distance tf = 1.521 "[m] Front track distance";
+  parameter Modelica.Units.SI.Distance tr = 1.556 "[m] Rear track distance";
+  parameter Modelica.Units.SI.Distance l = 2.690 "[m] Wheelbase distance";
+  parameter Modelica.Units.SI.Distance a = 1.300 "[m] Distance from front track to CG in X-axis";
+  parameter Modelica.Units.SI.Distance CGy = 0.0 "[m] Distance from vehicle centerline to CG in Y-axis";
+  //parameter Modelica.Units.SI.Distance static_hCG = 0.350 "Distance from CG to ground";
+  parameter Modelica.Units.SI.MomentOfInertia Ix = 10000 "[kg m2] Moment of inertia around X-axis -roll axis-";
+  parameter Modelica.Units.SI.MomentOfInertia Iy = 10000 "[kg m2] Moment of inertia around Y-axis -pitch axis-";
+  //parameter Modelica.Units.SI.MomentOfInertia Iz = 10000 "[m] Moment of inertia around Z-axis -yaw axis-";
+  parameter Modelica.Units.SI.Mass m_sprung = 1450 "[kg] Mass of sprung body";
+  //Unsprung bodies parameters (different front/rear)
+  parameter Modelica.Units.SI.Mass m_unsprung_f = 25 "[kg] Mass of front unsprung part (each side)";
+  parameter Modelica.Units.SI.Mass m_unsprung_r = 25 "[kg] Mass of rear unsprung part (each side)";
+  parameter Modelica.Units.SI.TranslationalSpringConstant c_tire = 120000 "[N/m] Tire equivalent spring coefficient";
+  parameter Modelica.Units.SI.TranslationalDampingConstant d_tire = 1000 "[Ns/m] Tire equivalent damping coefficient";
+  parameter Modelica.Units.SI.Distance s_rel0_tire = 0.100 "[m] Initial tire wall length";
+  parameter Modelica.Units.SI.TranslationalDampingConstant d_f = 3500 "[Ns/m] Damping coefficient of front dampers";
+  parameter Modelica.Units.SI.TranslationalDampingConstant d_r = 3500 "[Ns/m] Damping coefficient of rear dampers";
+  parameter Modelica.Units.SI.Distance s_rel0_d_f = 0.300 "[m] Initial front damper length";
+  parameter Modelica.Units.SI.Distance s_rel0_d_r = 0.300 "[m] Initial rear damper length";
+  parameter Modelica.Units.SI.TranslationalSpringConstant c_f = 45000 "[N/m] Spring coefficient of front springs";
+  parameter Modelica.Units.SI.TranslationalSpringConstant c_r = 35000 "[N/m] Spring coefficient of rear springs";
+  parameter Modelica.Units.SI.Distance s_rel0_c_f = 0.300 "[m] Intial front spring length (unstretched)";
+  parameter Modelica.Units.SI.Distance s_rel0_c_r = 0.300 "[m] Intial rear spring length (unstretched)";
+end variables;
