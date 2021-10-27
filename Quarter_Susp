@@ -1,0 +1,22 @@
+model Quarter_Susp
+  Modelica.Mechanics.Translational.Sources.Force sprung_chassis "Force coming from sprung chassis into suspension (free DOF)";
+  Modelica.Mechanics.Translational.Components.Spring spring(c = 35000, s_rel0 = 0.3, s_rel(start = spring.s_rel0, fixed = true)) "Suspension spring";
+  Modelica.Mechanics.Translational.Components.Damper damper(d = 1500, s_nominal = 0.3) "Suspension damper";
+  Modelica.Mechanics.Translational.Components.Mass unsprung_mass(m = 25) "Representation of unsprung mass (wheel assembly + part of suspension weight)";
+  Modelica.Mechanics.Translational.Components.Spring tire(c = 120000, s_rel0 = 0.1, s_rel(start = tire.s_rel0, fixed = true)) "Tire rubber equivalent spring";
+  Modelica.Mechanics.Translational.Components.Damper tire_damp(d = 500, s_nominal = 0.1) "Tire rubber equivalent damping";
+  Modelica.Mechanics.Translational.Components.Fixed ground "Flat horizontal ground (z=0)";
+  Modelica.Mechanics.Translational.Sources.Force unsprung_fz(f = unsprung_mass.m * 9.81) "Force equivalent to unsprung weight";
+  
+equation
+//Component connection (spring-damper in parallel -> unsprung_mass -> tire spring-tire damp in parallel)
+  connect(sprung_chassis.flange, spring.flange_a);
+  connect(sprung_chassis.flange, damper.flange_a);
+  connect(unsprung_fz.flange, unsprung_mass.flange_a);
+  connect(spring.flange_b, unsprung_mass.flange_a);
+  connect(damper.flange_b, unsprung_mass.flange_a);
+  connect(unsprung_mass.flange_b, tire.flange_a);
+  connect(unsprung_mass.flange_b, tire_damp.flange_a);
+  connect(tire.flange_b, ground.flange);
+  connect(tire_damp.flange_b, ground.flange);
+end Quarter_Susp;
