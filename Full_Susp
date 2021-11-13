@@ -2,25 +2,21 @@ model Full_Susp
 extends FVM.variables;
     parameter Modelica.Units.SI.Force sprung_fz = m_sprung * g "[N] Force equivalent to sprung chassis weight";
     parameter Modelica.Units.SI.Distance b = l - a "[m] Distance from CG to rear axle in X-axis";
-    Modelica.Units.SI.AngularAcceleration alphax(start = 0, fixed = true) "[rad/s2] Angular acceleration in X-axis (roll) of sprung chassis";
-    Modelica.Units.SI.AngularAcceleration alphay(start = 0, fixed = true) "[rad/s2] Angular acceleration in Y-axis (pitch) of sprung chassis";
+    Modelica.Units.SI.AngularAcceleration alphax(start = 0) "[rad/s2] Angular acceleration in X-axis (roll) of sprung chassis";
+    Modelica.Units.SI.AngularAcceleration alphay(start = 0) "[rad/s2] Angular acceleration in Y-axis (pitch) of sprung chassis";
     Modelica.Units.SI.AngularVelocity rx(start = 0, fixed = true) "[rad/s] Angular velocity in X-axis (roll) of sprung chassis";
     Modelica.Units.SI.AngularVelocity ry(start = 0, fixed = true) "[rad/s] Angular velocity in Y-axis (pitch) of sprung chassis";
-    Modelica.Units.SI.Angle roll(start = 0) "[º] Angular displacement in X-axis of sprung chassis";
-    Modelica.Units.SI.Angle pitch(start = 0) "[º] Angular displacement in Y-axis of sprung chassis";
+    Modelica.Units.SI.Angle roll(start = 0, fixed = true) "[º] Angular displacement in X-axis of sprung chassis";
+    Modelica.Units.SI.Angle pitch(start = 0, fixed = true) "[º] Angular displacement in Y-axis of sprung chassis";
     
     Modelica.Units.SI.Position hCG(stateSelect = StateSelect.prefer) "[m] Height (Z-axis position) of CG (heave)";
     Modelica.Units.SI.Velocity vz(start = 0, fixed = true) "[m/s] Velocity in Z-axis of CG (heave)";
     Modelica.Units.SI.Acceleration az(start = g) "[m/s2] Acceleration in Z-axis of CG (heave)";
     
-//Temporary values for ax and ay variables (with FVM their values will come from Chassis model (tire forces)
-    parameter Modelica.Units.SI.Acceleration ax = 0 "[m/s2] Acceleration in X-axis of CG (forward motion)";
-    parameter Modelica.Units.SI.Acceleration ay = 0 "[m/s2] Acceleration in Y-axis of CG (turning motion)";
-        
-    //Modelica.Units.SI.Acceleration ax(start = 0) "[m/s2] Acceleration in X-axis of CG (forward motion)";
-    //Modelica.Units.SI.Acceleration ay(start = 0) "[m/s2] Acceleration in Y-axis of CG (turning motion)";
+    Modelica.Units.SI.Acceleration ax(start = 0) "[m/s2] Acceleration in X-axis of CG (forward motion)";
+    Modelica.Units.SI.Acceleration ay(start = 0) "[m/s2] Acceleration in Y-axis of CG (turning motion)";
     
-//Full suspension assemblies connection: 4x quarter_susp labeled as FL (Front Left), FR (Front Right), RL (Rear Left), RR (Rear Right)
+  //Full suspension assemblies connection: 4x quarter_susp labeled as FL (Front Left), FR (Front Right), RL (Rear Left), RR (Rear Right)
     FVM.Quarter_Susp FL(spring.c = c_f, spring.s_rel0 = s_rel0_c_f, damper.d = d_f, damper.s_nominal = s_rel0_d_f, unsprung_mass.m = m_unsprung_f, tire.c = c_tire, tire.s_rel0 = s_rel0_tire, tire_damp.d = d_tire, tire_damp.s_nominal = s_rel0_tire);
     FVM.Quarter_Susp FR(spring.c = c_f, spring.s_rel0 = s_rel0_c_f, damper.d = d_f, damper.s_nominal = s_rel0_d_f, unsprung_mass.m = m_unsprung_f, tire.c = c_tire, tire.s_rel0 = s_rel0_tire, tire_damp.d = d_tire, tire_damp.s_nominal = s_rel0_tire);
     FVM.Quarter_Susp RL(spring.c = c_r, spring.s_rel0 = s_rel0_c_r, damper.d = d_r, damper.s_nominal = s_rel0_d_r, unsprung_mass.m = m_unsprung_r, tire.c = c_tire, tire.s_rel0 = s_rel0_tire, tire_damp.d = d_tire, tire_damp.s_nominal = s_rel0_tire);
@@ -28,7 +24,7 @@ extends FVM.variables;
     
   equation
 //Height of each of the 4 connection points between suspension and sprung chassis
-    FL.spring.flange_a.s = hCG - sin(pitch) * a - sin(roll) * tf / 2;
+  FL.spring.flange_a.s = hCG - sin(pitch) * a - sin(roll) * tf / 2;
     FR.spring.flange_a.s = hCG - sin(pitch) * a + sin(roll) * tf / 2;
     RL.spring.flange_a.s = hCG + sin(pitch) * b - sin(roll) * tr / 2;
     RR.spring.flange_a.s = hCG + sin(pitch) * b + sin(roll) * tr / 2;
@@ -39,11 +35,10 @@ extends FVM.variables;
     der(ry) = alphay;
     der(hCG) = vz;
     der(vz) = az;
-        
-//sum(F) = m * a  Includes 4 forces coming from from suspension and sprung chassis weight
-    (-FL.sprung_chassis.f) - FR.sprung_chassis.f - RL.sprung_chassis.f - RR.sprung_chassis.f + sprung_fz = m_sprung * az;
     
+//sum(F) = m * a  Includes 4 forces coming from from suspension and sprung chassis weight
+  (-FL.sprung_chassis.f) - FR.sprung_chassis.f - RL.sprung_chassis.f - RR.sprung_chassis.f + sprung_fz = m_sprung * az;
 //sum(M) = I * alpha  Choosen point: ground projection of CG (avoids calculation of all contact patch forces and sprung chassis weight)
-    (FL.sprung_chassis.f + FR.sprung_chassis.f) * a - (RL.sprung_chassis.f + RR.sprung_chassis.f) * b + m_sprung * ax * hCG = Iy * alphay;
+  (FL.sprung_chassis.f + FR.sprung_chassis.f) * a - (RL.sprung_chassis.f + RR.sprung_chassis.f) * b + m_sprung * ax * hCG = Iy * alphay;
     FL.sprung_chassis.f * (tf / 2 + CGy) + RL.sprung_chassis.f * (tr / 2 + CGy) - (FR.sprung_chassis.f * (tf / 2 - CGy) + RR.sprung_chassis.f * (tr / 2 - CGy)) - m_sprung * ay * hCG = Ix * alphax;
-end Full_Susp;
+  end Full_Susp;
