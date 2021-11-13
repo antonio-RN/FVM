@@ -1,5 +1,7 @@
 partial record variables
   constant Modelica.Units.SI.Acceleration g = 9.81 "[m/s2] Gravitational acceleration in Z-axis";
+  constant Real epsilon = 0.00000001 "Small quantity to add to denominators in order to avoid singularity";
+  
   //Sprung body parameters
   parameter Modelica.Units.SI.Distance tf = 1.521 "[m] Front track distance";
   parameter Modelica.Units.SI.Distance tr = 1.556 "[m] Rear track distance";
@@ -9,8 +11,8 @@ partial record variables
   //parameter Modelica.Units.SI.Distance static_hCG = 0.350 "Distance from CG to ground";
   parameter Modelica.Units.SI.MomentOfInertia Ix = 10000 "[kg m2] Moment of inertia around X-axis -roll axis-";
   parameter Modelica.Units.SI.MomentOfInertia Iy = 10000 "[kg m2] Moment of inertia around Y-axis -pitch axis-";
-  //parameter Modelica.Units.SI.MomentOfInertia Iz = 10000 "[m] Moment of inertia around Z-axis -yaw axis-";
   parameter Modelica.Units.SI.Mass m_sprung = 1450 "[kg] Mass of sprung body";
+  
   //Unsprung bodies parameters (different front/rear)
   parameter Modelica.Units.SI.Mass m_unsprung_f = 25 "[kg] Mass of front unsprung part (each side)";
   parameter Modelica.Units.SI.Mass m_unsprung_r = 25 "[kg] Mass of rear unsprung part (each side)";
@@ -25,4 +27,31 @@ partial record variables
   parameter Modelica.Units.SI.TranslationalSpringConstant c_r = 35000 "[N/m] Spring coefficient of rear springs";
   parameter Modelica.Units.SI.Distance s_rel0_c_f = 0.300 "[m] Intial front spring length (unstretched)";
   parameter Modelica.Units.SI.Distance s_rel0_c_r = 0.300 "[m] Intial rear spring length (unstretched)";
+  
+  //Full vehicle parameters
+  parameter Modelica.Units.SI.MomentOfInertia Iz = 10000 "[kg m2] Moment of inertia around Z-axis -yaw axis-";
+  
+  //Tire characterization parameters
+  parameter Modelica.Units.SI.Distance re = 0.200 "[m] Effective radius, measured at wheel free-rolling condition";
+  parameter Modelica.Units.SI.MomentOfInertia Mwf = 20 "[kg m2] Rotational inertia of front wheel";
+  parameter Modelica.Units.SI.MomentOfInertia Mwr = 20 "[kg m2] Rotational inertia of front wheel";
+  parameter Real kr = 0.00001 "[Nm2/s] Provisional coefficient for rolling resistance moment";
+  
+  //Pure longitudinal slip
+  parameter Real Bx = 1 "[none] Magic Formula Stiffness factor (longitudinal)";
+  parameter Real Cx = 1 "[none] Magic Formula Shape factor (longitudinal)";
+  parameter Real Dx = 2500 "[none] Magic Formula Peak factor (longitudinal)";
+  parameter Real Ex = 1 "[none] Magic Formula Curvature factor (longitudinal)";
+  parameter Real Svx = 0 "[none] Magic Formula Vertical shift (longitudinal)";
+  parameter Real Shx = 0 "[none] Magic Formula Horizontal shift (longitudinal)";
+  
+  //Pure side slip
+  parameter Real By = 1 "[none] Magic Formula Stiffness factor (lateral)";
+  parameter Real Cy = 1 "[none] Magic Formula Shape factor (lateral)";
+  parameter Real Dy = 1 "[none] Magic Formula Peak factor (lateral)";
+  parameter Real Ey = 1 "[none] Magic Formula Curvature factor (lateral)";
+  parameter Real Svy = 0 "[none] Magic Formula Vertical shift (lateral)";
+  parameter Real Shy = 0 "[none] Magic Formula Horizontal shift (lateral)";
+  parameter Modelica.Units.SI.Distance t = 0.012 "[m] Pneumatic trail, simplified as a static value";
+  parameter Modelica.Units.SI.MomentOfForce mr = 0.050 "[Nm] Residual moment of tire, simplified as a static value";
 end variables;
