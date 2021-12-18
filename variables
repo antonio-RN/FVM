@@ -32,26 +32,23 @@ partial record variables
   parameter Modelica.Units.SI.MomentOfInertia Iz = 10000 "[kg m2] Moment of inertia around Z-axis -yaw axis-";
   
   //Tire characterization parameters
+  parameter Modelica.Units.SI.Distance ro = 0.200 "[m] Non-deflected radius, measured at wheel free-rolling condition";
   parameter Modelica.Units.SI.Distance re = 0.200 "[m] Effective radius, measured at wheel free-rolling condition";
-  parameter Modelica.Units.SI.MomentOfInertia Mwf = 20 "[kg m2] Rotational inertia of front wheel";
-  parameter Modelica.Units.SI.MomentOfInertia Mwr = 20 "[kg m2] Rotational inertia of front wheel";
-  parameter Real kr = 0.00001 "[Nm2/s] Provisional coefficient for rolling resistance moment";
-  
+  parameter Modelica.Units.SI.MomentOfInertia Mwf = 1 "[kg m2] Rotational inertia of front wheel";
+  parameter Modelica.Units.SI.MomentOfInertia Mwr = 1 "[kg m2] Rotational inertia of front wheel";
+  parameter Real kr = 0.005 "[Nm2/s] Provisional coefficient for rolling resistance moment";
+  parameter Modelica.Units.SI.Distance t0 = 0.020 "[m] Theoretical maximum pneumatic trail, measured at still (simplification)";
+ 
   //Pure longitudinal slip
-  parameter Real Bx = 1 "[none] Magic Formula Stiffness factor (longitudinal)";
-  parameter Real Cx = 1 "[none] Magic Formula Shape factor (longitudinal)";
-  parameter Real Dx = 2500 "[none] Magic Formula Peak factor (longitudinal)";
-  parameter Real Ex = 1 "[none] Magic Formula Curvature factor (longitudinal)";
-  parameter Real Svx = 0 "[none] Magic Formula Vertical shift (longitudinal)";
-  parameter Real Shx = 0 "[none] Magic Formula Horizontal shift (longitudinal)";
+  parameter Real Bx = 10 "[none] Magic Formula Stiffness factor (longitudinal)";
+  parameter Real Cx = 1.65 "[none] Magic Formula Shape factor (longitudinal)";
+  parameter Real Dx = 1 "[none] Magic Formula Peak factor (longitudinal)";
+  parameter Real Ex = 0.97 "[none] Magic Formula Curvature factor (longitudinal)";
   
   //Pure side slip
-  parameter Real By = 1 "[none] Magic Formula Stiffness factor (lateral)";
-  parameter Real Cy = 1 "[none] Magic Formula Shape factor (lateral)";
+  parameter Real By = 10 "[none] Magic Formula Stiffness factor (lateral)";
+  parameter Real Cy = 1.3 "[none] Magic Formula Shape factor (lateral)";
   parameter Real Dy = 1 "[none] Magic Formula Peak factor (lateral)";
-  parameter Real Ey = 1 "[none] Magic Formula Curvature factor (lateral)";
-  parameter Real Svy = 0 "[none] Magic Formula Vertical shift (lateral)";
-  parameter Real Shy = 0 "[none] Magic Formula Horizontal shift (lateral)";
-  parameter Modelica.Units.SI.Distance t = 0.012 "[m] Pneumatic trail, simplified as a static value";
-  parameter Modelica.Units.SI.MomentOfForce mr = 0.050 "[Nm] Residual moment of tire, simplified as a static value";
+  parameter Real Ey = 0.97 "[none] Magic Formula Curvature factor (lateral)";
+
 end variables;
