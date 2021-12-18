@@ -1,16 +1,17 @@
 model Full_Chassis
+
   extends FVM.variables;
   extends Full_Susp;
     
-  parameter Modelica.Units.SI.Mass m_total = m_sprung + 2 * m_unsprung_f + 2 * m_unsprung_r "[kg] Total vehicle mass, including sprung weight and each unsprung  weight";
+  parameter Modelica.Units.SI.Mass m_total = m_sprung + 2 * m_unsprung_f + 2 * m_unsprung_r "[kg] Total vehicle mass, including sprung weight and each unsprung weight";
   
   Modelica.Units.SI.AngularAcceleration alphaz(start = 0) "[rad/s2] Angular acceleration in Z-axis (yaw) of full chassis";
   Modelica.Units.SI.AngularVelocity rz(start = 0, fixed = true) "[rad/s] Angular velocity in Z-axis (yaw) of full chassis";
-  Modelica.Units.SI.Angle yaw(start = 0, fixed = true) "[º] Angular displacement in Z-axis of full chassis";
+  Modelica.Units.SI.Angle yaw(start = 0, fixed = true) "[rad] Angular displacement in Z-axis of full chassis";
   
   Modelica.Units.SI.Velocity vx(start = 0, fixed = true) "[m/s] Velocity in X-axis of CG (forward motion)";
   Modelica.Units.SI.Velocity vy(start = 0, fixed = true) "[m/s] Velocity in Y-axis of CG (turning motion)";
-  Modelica.Units.SI.Angle beta(start = 0) "[º] Slip angle of whole vehicle at CG";
+  Modelica.Units.SI.Angle beta(start = 0) "[rad] Slip angle of whole vehicle at CG";
     
   FVM.Quarter_Wheel FrLe(Ir = Mwf) "Front Left wheel including tire forces and moments";
   FVM.Quarter_Wheel FrRi(Ir = Mwf) "Front Right wheel including tire forces and moments";
@@ -18,37 +19,51 @@ model Full_Chassis
   FVM.Quarter_Wheel ReRi(Ir = Mwr) "Rear Right wheel including tire forces and moments";
   
 equation
+
 //Inputs
-  FrLe.delta = 0;
+
+//Front steering input (in rad), positive to the left
+  FrLe.delta = -0.1;
   
   FrLe.Td = 0;
   FrRi.Td = 0;
-  //ReLe.Td = 20;
-  //ReRi.Td = 20;
-  ReLe.omega = 20;
-  ReRi.omega = 20;
+  
+//Rear drivetrain torque (in Nm)
+  ReLe.Td = 100;
+  ReRi.Td = ReLe.Td;
+  
+
+  //ReLe.omega = 50;
+  //ReRi.omega = ReLe.omega;
 
 
-//Simplification of steering angle (same for front left and front right wheels
+//Simplification of steering angle (same for front left and front right wheels)
+
   FrLe.delta = FrRi.delta;
+  
 //Simplification of no rear-wheel steering (rear left and rear right wheel steering angles = 0)
+
   ReLe.delta = ReRi.delta;
   ReLe.delta = 0;
 
   der(yaw) = rz;
   der(rz) = alphaz;
+  
 //Vehicle acceleration counting axis system movement due to yaw change
+
   der(vx) - rz * vy = ax;
   der(vy) + rz * vx = ay; 
-  beta = atan(vy / abs(vx + epsilon));
+  beta = atan(- vy / abs(vx + epsilon));
   
-//Tire vertical load (coming from suspensions Full_Susp model
+//Tire vertical load (coming from suspensions Full_Susp model)
+
   FrLe.Nz = - FL.tire.f;
   FrRi.Nz = - FR.tire.f;
   ReLe.Nz = - RL.tire.f;
   ReRi.Nz = - RR.tire.f;
 
 //Wheel velocity at wheel center (in vehicle coordinates)
+
   FrLe.vcx = vx + rz * (tf / 2 + CGy);
   FrRi.vcx = vx - rz * (tf / 2 - CGy);
   ReLe.vcx = vx + rz * (tr / 2 + CGy);
@@ -60,9 +75,13 @@ equation
   ReRi.vcy = vy - rz * b;
   
 //sum(F) = m * a (in X- and Y-axis)
+
   FrLe.fcx + FrRi.fcx + ReLe.fcx + ReRi.fcx = m_total * ax;
+  
   FrLe.fcy + FrRi.fcy + ReLe.fcy + ReRi.fcy = m_total * ay;
+  
 //sum(M) = I * alpha (in Z-axis)
+
   FrLe.fcx * (tf / 2 + CGy) - FrRi.fcx * (tf / 2 - CGy) + ReLe.fcx * (tr / 2 + CGy) - ReRi.fcx * (tr / 2 - CGy) + a * (FrLe.fcy + FrRi.fcy) - b * (ReLe.fcy + ReRi.fcy) + FrLe.mz + FrRi.mz + ReLe.mz + ReRi.mz = Iz * alphaz;
   
 end Full_Chassis;
