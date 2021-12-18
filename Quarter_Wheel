@@ -1,5 +1,7 @@
 model Quarter_Wheel
-  extends FVM.variables;  
+
+  extends FVM.variables; 
+   
   Modelica.Units.SI.AngularVelocity omega(start = 0) "[rad/s] Angular speed of wheel";
   Modelica.Units.SI.Torque Td(start = 0) "[Nm] Torque coming from the drivetrain";
   Modelica.Units.SI.Torque Tr(start = 0) "[Nm] Rolling resistance torque of the tire";
@@ -7,43 +9,47 @@ model Quarter_Wheel
   
   parameter Modelica.Units.SI.MomentOfInertia Ir = 10 "[kg m2] Rotational inertia of wheel";
   
-  Modelica.Units.SI.Angle delta(start = 0) "Steering angle measured from the vehicle centerline";
-  Modelica.Units.SI.Angle alpha(start = 0, fixed = true) "Slip angle measured as the difference between the wheel heading direction and the wheel velocity vector";
+  Modelica.Units.SI.Angle delta(start = 0) "[rad] Steering angle measured from the vehicle centerline";
+  Modelica.Units.SI.Angle alpha(start = 0) "[rad] Slip angle measured as the difference between the wheel heading direction and the wheel velocity vector";
   
-  Modelica.Units.SI.Velocity vcx(start = 0, fixed = true) "Longitudinal velocity of wheel -at wheel center- in vehicle coordinates";
-  Modelica.Units.SI.Velocity vcy(start = 0, fixed = true) "Lateral velocity of wheel -at wheel center- in vehicle coordinates";
+  Modelica.Units.SI.Velocity vcx(start = 0, fixed = true) "[m/s] Longitudinal velocity of wheel -at wheel center- in vehicle coordinates";
+  Modelica.Units.SI.Velocity vcy(start = 0, fixed = true) "[m/s] Lateral velocity of wheel -at wheel center- in vehicle coordinates";
   
-  Modelica.Units.SI.Velocity vx(start = 0, fixed = true) "Longitudinal velocity of wheel -at wheel center- in wheel coordinates";
-  Modelica.Units.SI.Velocity vy(start = 0, fixed = true) "Lateral velocity of wheel -at wheel center- in wheel coordinates";
+  Modelica.Units.SI.Velocity vx(start = 0, fixed = true) "[m/s] Longitudinal velocity of wheel -at wheel center- in wheel coordinates";
+  Modelica.Units.SI.Velocity vy(start = 0, fixed = true) "[m/s] Lateral velocity of wheel -at wheel center- in wheel coordinates";
 
-  Modelica.Units.SI.Force fcx(start = 0) "Longitudinal force generated from the tire in vehicle coordinates";
-  Modelica.Units.SI.Force fcy(start = 0) "Lateral force generated from the tire in vehicle coordinates";
+  Modelica.Units.SI.Force fcx(start = 0) "[N] Longitudinal force generated from the tire in vehicle coordinates";
+  Modelica.Units.SI.Force fcy(start = 0) "[N] Lateral force generated from the tire in vehicle coordinates";
   
-  Modelica.Units.SI.Force fx(start = 0) "Longitudinal force generated from the tire in wheel coordinates";
-  Modelica.Units.SI.Force fy(start = 0) "Lateral force generated from the tire in wheel coordinates";
-  Modelica.Units.SI.MomentOfForce mz(start = 0) "Moment around the vertical axis Z from the tire (self-aligning torque)";
+  Modelica.Units.SI.Force fx(start = 0) "[N] Longitudinal force generated from the tire in wheel coordinates";
+  Modelica.Units.SI.Force fy(start = 0) "[N] Lateral force generated from the tire in wheel coordinates";
+  Modelica.Units.SI.MomentOfForce mz(start = 0) "[Nm] Moment around the vertical axis Z from the tire (self-aligning torque)";
   
   Real alpha_adim(start = 0) "Slip angle adimensionalized via tan(alpha) for Magic Formula use";
   Real k_adim(start = 0) "Slip ratio defined as the difference in speed between wheel center and tire contact point";
   
 equation
 //Coordinate change from global vehicle to local wheel
-  vx = vcx * cos(delta) - vcy * sin(delta);
-  vy = vcx * sin(delta) + vcy * cos(delta);
+  vx = vcx * cos(delta) + vcy * sin(delta);
+  vy = - vcx * sin(delta) + vcy * cos(delta);
+  
 //Longitudinal and side slip calculation
   k_adim = -(vx - re * omega) / abs(vx + epsilon);
-  alpha = atan(vcy / (vcx + epsilon)) - delta;
+  alpha = - atan(vcy / (vcx + epsilon)) - delta;
   alpha_adim = tan(alpha);
 
 //Tire force and moment generation via Magic Formula
-  fx = Tire_force(B=Bx, C=Cx, D=Dx, E=Ex, Sv=Svx, Sh=Shx, x=k_adim);
-  fy = Tire_force(B=By, C=Cy, D=Dy, E=Ey, Sv=Svy, Sh=Shy, x=alpha_adim);
-  mz = Tire_moment(t=t, mr=mr, fy=fy);
+  fx = Tire_force(fz=Nz, B=Bx, C=Cx, D=Dx, E=Ex, x=k_adim);
+  fy = Tire_force(fz=Nz, B=By, C=Cy, D=Dy, E=Ey, x=alpha_adim);
+  mz = Tire_moment(a_adim=alpha_adim, t0=t0, fy=fy);
+  
 //Coordinate change from local wheel to global vehicle
   fcx = fx * cos(delta) - fy * sin(delta);
   fcy = fx * sin(delta) + fy * cos(delta);
+
 //Rolling resistance moment
   Tr = kr * vx * Nz;
+
 //sum(M) = I * alpha
   Td - fx * re - Tr = der(omega) * Ir;
   
