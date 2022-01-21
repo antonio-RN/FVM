@@ -1,34 +1,48 @@
 model Full_Susp
+
 extends FVM.variables;
+
     parameter Modelica.Units.SI.Force sprung_fz = m_sprung * g "[N] Force equivalent to sprung chassis weight";
     parameter Modelica.Units.SI.Distance b = l - a "[m] Distance from CG to rear axle in X-axis";
     Modelica.Units.SI.AngularAcceleration alphax(start = 0) "[rad/s2] Angular acceleration in X-axis (roll) of sprung chassis";
     Modelica.Units.SI.AngularAcceleration alphay(start = 0) "[rad/s2] Angular acceleration in Y-axis (pitch) of sprung chassis";
     Modelica.Units.SI.AngularVelocity rx(start = 0, fixed = true) "[rad/s] Angular velocity in X-axis (roll) of sprung chassis";
     Modelica.Units.SI.AngularVelocity ry(start = 0, fixed = true) "[rad/s] Angular velocity in Y-axis (pitch) of sprung chassis";
-    Modelica.Units.SI.Angle roll(start = 0, fixed = true) "[º] Angular displacement in X-axis of sprung chassis";
-    Modelica.Units.SI.Angle pitch(start = 0, fixed = true) "[º] Angular displacement in Y-axis of sprung chassis";
+    Modelica.Units.SI.Angle roll(start = 0, fixed = true) "[rad] Angular displacement in X-axis of sprung chassis";
+    Modelica.Units.SI.Angle pitch(start = 0, fixed = true) "[rad] Angular displacement in Y-axis of sprung chassis";
     
-    Modelica.Units.SI.Position hCG(stateSelect = StateSelect.prefer) "[m] Height (Z-axis position) of CG (heave)";
-    Modelica.Units.SI.Velocity vz(start = 0, fixed = true) "[m/s] Velocity in Z-axis of CG (heave)";
     Modelica.Units.SI.Acceleration az(start = g) "[m/s2] Acceleration in Z-axis of CG (heave)";
+    Modelica.Units.SI.Velocity vz(start = 0) "[m/s] Velocity in Z-axis of CG (heave)";
+    Modelica.Units.SI.Position hCG "[m] Height (Z-axis position) of CG (heave)";
     
     Modelica.Units.SI.Acceleration ax(start = 0) "[m/s2] Acceleration in X-axis of CG (forward motion)";
     Modelica.Units.SI.Acceleration ay(start = 0) "[m/s2] Acceleration in Y-axis of CG (turning motion)";
     
   //Full suspension assemblies connection: 4x quarter_susp labeled as FL (Front Left), FR (Front Right), RL (Rear Left), RR (Rear Right)
+  
     FVM.Quarter_Susp FL(spring.c = c_f, spring.s_rel0 = s_rel0_c_f, damper.d = d_f, damper.s_nominal = s_rel0_d_f, unsprung_mass.m = m_unsprung_f, tire.c = c_tire, tire.s_rel0 = s_rel0_tire, tire_damp.d = d_tire, tire_damp.s_nominal = s_rel0_tire);
     FVM.Quarter_Susp FR(spring.c = c_f, spring.s_rel0 = s_rel0_c_f, damper.d = d_f, damper.s_nominal = s_rel0_d_f, unsprung_mass.m = m_unsprung_f, tire.c = c_tire, tire.s_rel0 = s_rel0_tire, tire_damp.d = d_tire, tire_damp.s_nominal = s_rel0_tire);
     FVM.Quarter_Susp RL(spring.c = c_r, spring.s_rel0 = s_rel0_c_r, damper.d = d_r, damper.s_nominal = s_rel0_d_r, unsprung_mass.m = m_unsprung_r, tire.c = c_tire, tire.s_rel0 = s_rel0_tire, tire_damp.d = d_tire, tire_damp.s_nominal = s_rel0_tire);
     FVM.Quarter_Susp RR(spring.c = c_r, spring.s_rel0 = s_rel0_c_r, damper.d = d_r, damper.s_nominal = s_rel0_d_r, unsprung_mass.m = m_unsprung_r, tire.c = c_tire, tire.s_rel0 = s_rel0_tire, tire_damp.d = d_tire, tire_damp.s_nominal = s_rel0_tire);
     
   equation
-//Height of each of the 4 connection points between suspension and sprung chassis
-  FL.spring.flange_a.s = hCG - sin(pitch) * a - sin(roll) * tf / 2;
-    FR.spring.flange_a.s = hCG - sin(pitch) * a + sin(roll) * tf / 2;
-    RL.spring.flange_a.s = hCG + sin(pitch) * b - sin(roll) * tr / 2;
-    RR.spring.flange_a.s = hCG + sin(pitch) * b + sin(roll) * tr / 2;
+
+//Pitch & roll angle definition
+
+    ((FR.spring.flange_a.s + FL.spring.flange_a.s) / 2 - (RL.spring.flange_a.s + RR.spring.flange_a.s) / 2) / l = - sin(pitch);
     
+    ((FL.spring.flange_a.s + RL.spring.flange_a.s) / 2 - (FR.spring.flange_a.s + RR.spring.flange_a.s) / 2) / ((tf + tr) / 2) = - sin(roll);
+    
+//Height of CG definition
+
+    hCG = (FL.spring.flange_a.s + FR.spring.flange_a.s) / 2 - a * sin(pitch) - hhCG * cos(roll) * cos(pitch);
+
+//Geometric constraint for ensuring rigidity of chassis
+
+    FL.spring.flange_a.s + (RR.spring.flange_a.s - FL.spring.flange_a.s) * tf / tr = FR.spring.flange_a.s + (RL.spring.flange_a.s - FR.spring.flange_a.s) * tf / tr;
+           
+//Basic derivatives of rotation and traslational movements
+
     der(roll) = rx;
     der(pitch) = ry;
     der(rx) = alphax;
@@ -36,9 +50,16 @@ extends FVM.variables;
     der(hCG) = vz;
     der(vz) = az;
     
-//sum(F) = m * a  Includes 4 forces coming from from suspension and sprung chassis weight
-  (-FL.sprung_chassis.f) - FR.sprung_chassis.f - RL.sprung_chassis.f - RR.sprung_chassis.f + sprung_fz = m_sprung * az;
-//sum(M) = I * alpha  Choosen point: ground projection of CG (avoids calculation of all contact patch forces and sprung chassis weight)
-  (FL.sprung_chassis.f + FR.sprung_chassis.f) * a - (RL.sprung_chassis.f + RR.sprung_chassis.f) * b + m_sprung * ax * hCG = Iy * alphay;
-    FL.sprung_chassis.f * (tf / 2 + CGy) + RL.sprung_chassis.f * (tr / 2 + CGy) - (FR.sprung_chassis.f * (tf / 2 - CGy) + RR.sprung_chassis.f * (tr / 2 - CGy)) - m_sprung * ay * hCG = Ix * alphax;
-  end Full_Susp;
+//sum(F) = m * a (Z-axis) Includes 4 forces coming from from suspension and sprung chassis weight
+
+  -FL.fz.f - FR.fz.f - RL.fz.f - RR.fz.f + sprung_fz = m_sprung * az;
+  
+//sum(M) = I * alpha (X- and Y-axis) // Chosen equilibrium point: vertical projection of CG at front axle centerpoint horizontal plane.
+
+  //Y-axis
+  sprung_fz * (a * cos(pitch) + hhCG * sin(pitch) * cos(roll)) - (l * cos(pitch) + (tr / 2) * sin(roll) * sin(pitch)) * RL.fz.f - (l * cos(pitch) - (tr / 2) * sin(roll) * sin(pitch)) * RR.fz.f - (tf / 2) * sin(roll) * sin(pitch) * FL.fz.f + (tf / 2) * sin(roll) * sin(pitch) * FR.fz.f + (l * sin(pitch) - (tr / 2) * sin(roll) * cos(pitch)) * RL.fx + (l * sin(pitch) + (tr / 2) * sin(roll) * cos(pitch)) * RR.fx - (tf / 2) * sin(roll) * cos(pitch) * FL.fx + (tf / 2) * sin(roll) * cos(pitch) * FR.fx = Iy * alphay;
+  
+  //X-axis
+  sprung_fz * hhCG * sin(roll) * cos(pitch) + (tr / 2) * cos(roll) * cos(pitch) * RL.fz.f - (tr / 2) * cos(roll) * cos(pitch) * RR.fz.f + (tf / 2) * cos(roll) * cos(pitch) * FL.fz.f - (tf / 2) * cos(roll) * cos(pitch) * FR.fz.f + (tr / 2) * sin(roll) * RL.fy - (tr / 2) * sin(roll) * RR.fy + (tf / 2) * sin(roll) * FL.fy - (tf / 2) * sin(roll) * FR.fy = Ix * alphax;
+
+end Full_Susp;
