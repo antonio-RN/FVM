@@ -23,18 +23,18 @@ equation
 //Inputs
 
 //Front steering input (in rad), positive to the left
-  FrLe.delta = -0.1;
+  FrLe.delta = 0;
   
   FrLe.Td = 0;
   FrRi.Td = 0;
   
 //Rear drivetrain torque (in Nm)
-  ReLe.Td = 100;
-  ReRi.Td = ReLe.Td;
+  //ReLe.Td = 110;
+  //ReRi.Td = ReLe.Td;
   
 
-  //ReLe.omega = 50;
-  //ReRi.omega = ReLe.omega;
+  ReLe.omega = 100;
+  ReRi.omega = ReLe.omega;
 
 
 //Simplification of steering angle (same for front left and front right wheels)
@@ -61,13 +61,23 @@ equation
   FrRi.Nz = - FR.tire.f;
   ReLe.Nz = - RL.tire.f;
   ReRi.Nz = - RR.tire.f;
+  
+  FrLe.fcx = FL.fx;
+  FrRi.fcx = FR.fx;
+  ReLe.fcx = RL.fx;
+  ReRi.fcx = RR.fx;
+  
+  FrLe.fcy = FL.fy;
+  FrRi.fcy = FR.fy;
+  ReLe.fcy = RL.fy;
+  ReRi.fcy = RR.fy;  
 
 //Wheel velocity at wheel center (in vehicle coordinates)
 
-  FrLe.vcx = vx + rz * (tf / 2 + CGy);
-  FrRi.vcx = vx - rz * (tf / 2 - CGy);
-  ReLe.vcx = vx + rz * (tr / 2 + CGy);
-  ReRi.vcx = vx - rz * (tr / 2 - CGy);
+  FrLe.vcx = vx + rz * (tf / 2);
+  FrRi.vcx = vx - rz * (tf / 2);
+  ReLe.vcx = vx + rz * (tr / 2);
+  ReRi.vcx = vx - rz * (tr / 2);
   
   FrLe.vcy = vy + rz * a;
   FrRi.vcy = vy + rz * a;
@@ -82,6 +92,7 @@ equation
   
 //sum(M) = I * alpha (in Z-axis)
 
-  FrLe.fcx * (tf / 2 + CGy) - FrRi.fcx * (tf / 2 - CGy) + ReLe.fcx * (tr / 2 + CGy) - ReRi.fcx * (tr / 2 - CGy) + a * (FrLe.fcy + FrRi.fcy) - b * (ReLe.fcy + ReRi.fcy) + FrLe.mz + FrRi.mz + ReLe.mz + ReRi.mz = Iz * alphaz;
+  FrLe.fcx * (tf / 2) - FrRi.fcx * (tf / 2) + ReLe.fcx * (tr / 2) - ReRi.fcx * (tr / 2) + a * (FrLe.fcy + FrRi.fcy) - b * (ReLe.fcy + ReRi.fcy) + FrLe.mz + FrRi.mz + ReLe.mz + ReRi.mz = Iz * alphaz;
   
 end Full_Chassis;
+
