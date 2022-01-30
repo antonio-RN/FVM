@@ -46,5 +46,5 @@ This list will be updated with coming model improvements.
 
 ## Model usage
 
-Most of vehicle properties are contained within *variables* file. Basic input for simulation (e.g. torque applied to wheels, wheel rotation speed) is defined inside *Full_Chassis* file (it will be moved to *variables* file in further versions). 
+Most of vehicle properties are contained within *variables* file. Basic input for simulation (e.g. torque applied to wheels, wheel rotation speed) is defined there also. 
 *Full_Chasss* file must be the model simulated within OpenModelica.
