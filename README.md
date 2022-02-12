@@ -14,7 +14,7 @@ The full model comprises 2 sub-models:
 
 - Independent wheel suspension (*Quarter_Susp*): fully vertical suspension (Z-axis) susb-system with the main mechanical elements represented by their mathematical 1D counterpart. Four instances of this sub-model make the full suspension system (*Full_Susp*), wich takes into account the sprung body rotation (X- and Y-axis) and vertical suspension work (Z-axis). From ground to upper joint:
 
-  - Tire: spring-damper assembly always connected to ground (y=0).
+  - Tire: spring-damper assembly always connected to ground (z=0).
 
   - Unsprung mass: puntual mass that accounts for wheel + half suspension links mass.
 
