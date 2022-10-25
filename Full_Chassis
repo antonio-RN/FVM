@@ -1,77 +1,45 @@
 model Full_Chassis
-  extends Full_Susp;
   import Modelica.Units.SI.*;
   import FVM.variables.*;
-  parameter Mass m_total = m_sprung + 2 * m_unsprung_f + 2 * m_unsprung_r "[kg] Total vehicle mass, including sprung weight and each unsprung weight";
-  AngularAcceleration alphaz(start = 0) "[rad/s2] Angular acceleration in Z-axis (yaw) of full chassis";
-  AngularVelocity rz "[rad/s] Angular velocity in Z-axis (yaw) of full chassis";
-  Angle yaw "[rad] Angular displacement in Z-axis of full chassis";
-  Velocity vx "[m/s] Velocity in X-axis of CG (forward motion)";
-  Velocity vy "[m/s] Velocity in Y-axis of CG (turning motion)";
-  Angle beta "[rad] Slip angle of whole vehicle at CG";
-  FVM.Quarter_Wheel FrLe "Front Left wheel including tire forces and moments";
-  FVM.Quarter_Wheel FrRi "Front Right wheel including tire forces and moments";
-  FVM.Quarter_Wheel ReLe "Rear Left wheel including tire forces and moments";
-  FVM.Quarter_Wheel ReRi "Rear Right wheel including tire forces and moments";
-initial equation
-  FrLe.Ir = Mwf;
-  FrRi.Ir = Mwf;
-  ReLe.Ir = Mwr;
-  ReRi.Ir = Mwr;
-  rz = 0;
-  yaw = 0;
-  vx = 0;
-  vy = 0;
-  beta = 0;
+  import FVM.comps.Flange_f1_in;
+  import FVM.comps.Flange_an2_in;
+  import FVM.comps.Flange_a2_out;
+  
+  Flange_f1_in FL_tire_load, FR_tire_load, RL_tire_load, RR_tire_load;
+  Flange_an2_in sprung_angles;
+  Flange_a2_out CG_acc;
+  
+  FVM.Quarter_Wheel FrLe(Ir = Mwf) "Front Left wheel including tire forces and moments";
+  FVM.Quarter_Wheel FrRi(Ir = Mwf) "Front Right wheel including tire forces and moments";
+  FVM.Quarter_Wheel ReLe(Ir = Mwr) "Rear Left wheel including tire forces and moments";
+  FVM.Quarter_Wheel ReRi(Ir = Mwr) "Rear Right wheel including tire forces and moments";
+  FVM.Instance_Chassis chassis "Whole chassis with longitudinal and lateral accelerations, rotation around Z-axis";
+
 equation
-//Inputs
-//Front steering input (in rad), positive to the left. Simplification (same for front left and front right wheels)
-FrLe.delta = input_delta;
-FrRi.delta = FrLe.delta;
-//Front drivetrain torque (in Nm, 0Nm for RWD). Simplification (same for front left and front right wheels)
-FrLe.Td = 0;
-FrRi.Td = FrLe.Td;
-//Rear drivetrain torque (in Nm)
-ReLe.Td = input_torque_RWD;
-ReRi.Td = ReLe.Td;
-//Rear wheel angular speed (driven by drivetrain)
-//ReLe.omega = 100;
-//ReRi.omega = ReLe.omega;
-//Simplification of no rear-wheel steering (rear left and rear right wheel steering angles = 0)
-ReLe.delta = 0;
-ReRi.delta = ReLe.delta;
-//Basic derivatives of rotation movement
-  der(yaw) = rz;
-  der(rz) = alphaz;
-//Vehicle acceleration counting axis system movement due to yaw change
-  der(vx) - rz * vy = ax;
-  der(vy) + rz * vx = ay;
-  beta = atan(-vy / abs(vx + epsilon));
-//Tire vertical load (coming from suspensions Full_Susp model)
-  FrLe.Nz = -FL.tire.f;
-  FrRi.Nz = -FR.tire.f;
-  ReLe.Nz = -RL.tire.f;
-  ReRi.Nz = -RR.tire.f;
-  FrLe.fcx = FL.fx;
-  FrRi.fcx = FR.fx;
-  ReLe.fcx = RL.fx;
-  ReRi.fcx = RR.fx;
-  FrLe.fcy = FL.fy;
-  FrRi.fcy = FR.fy;
-  ReLe.fcy = RL.fy;
-  ReRi.fcy = RR.fy;
-//Wheel velocity at wheel center (in vehicle coordinates)
-  FrLe.vcx = vx + rz * (tf / 2);
-  FrRi.vcx = vx - rz * (tf / 2);
-  ReLe.vcx = vx + rz * (tr / 2);
-  ReRi.vcx = vx - rz * (tr / 2);
-  FrLe.vcy = vy + rz * a;
-  FrRi.vcy = vy + rz * a;
-  ReLe.vcy = vy - rz * b;
-  ReRi.vcy = vy - rz * b;
-//sum(F) = m * a (in X- and Y-axis)
-  FrLe.fcx + FrRi.fcx + ReLe.fcx + ReRi.fcx = m_total * ax;
-  FrLe.fcy + FrRi.fcy + ReLe.fcy + ReRi.fcy = m_total * ay;
-//sum(M) = I * alpha (in Z-axis)
-  FrLe.fcx * cos(roll) * (tf / 2) - FrRi.fcx * cos(roll) * (tf / 2) + ReLe.fcx * cos(roll) * (tr / 2) - ReRi.fcx * cos(roll) * (tr / 2) + (FrLe.fcy + FrRi.fcy) * cos(pitch) + a - (ReLe.fcy + ReRi.fcy) * cos(pitch) * b + FrLe.mz + FrRi.mz + ReLe.mz + ReRi.mz = Iz * alphaz;
+  connect(FrLe.chassis_fix2, chassis.FL_chassis_fix2);
+  connect(FrLe.chassis_fix1, chassis.FL_chassis_fix);
+  connect(FrLe.steering, chassis.FL_steering);
+  connect(FrLe.drivetrain, chassis.FL_drivetrain);
+  connect(FrLe.speed, chassis.FL_speed);
+  connect(FrLe.tire_load, FL_tire_load);
+  connect(FrRi.chassis_fix2, chassis.FR_chassis_fix2);
+  connect(FrRi.chassis_fix1, chassis.FR_chassis_fix);
+  connect(FrRi.steering, chassis.FR_steering);
+  connect(FrRi.drivetrain, chassis.FR_drivetrain);
+  connect(FrRi.speed, chassis.FR_speed);
+  connect(FrRi.tire_load, FR_tire_load);
+  connect(ReLe.chassis_fix2, chassis.RL_chassis_fix2);
+  connect(ReLe.chassis_fix1, chassis.RL_chassis_fix);
+  connect(ReLe.steering, chassis.RL_steering);
+  connect(ReLe.drivetrain, chassis.RL_drivetrain);
+  connect(ReLe.speed, chassis.RL_speed);
+  connect(ReLe.tire_load, RL_tire_load);
+  connect(ReRi.chassis_fix2, chassis.RR_chassis_fix2);
+  connect(ReRi.chassis_fix1, chassis.RR_chassis_fix);
+  connect(ReRi.steering, chassis.RR_steering);
+  connect(ReRi.drivetrain, chassis.RR_drivetrain);
+  connect(ReRi.speed, chassis.RR_speed);
+  connect(ReRi.tire_load, RR_tire_load);
+  connect(chassis.sprung_angles, sprung_angles);
+  connect(chassis.CG_acc, CG_acc);
 end Full_Chassis;

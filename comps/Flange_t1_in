@@ -1,0 +1,3 @@
+connector Flange_t1_in "One-dimension causual mechanic connector with only moment"
+  input Modelica.Units.SI.Torque mz "[Nm] Self-aligning torque (information transfer from models)";
+end Flange_t1_in;

@@ -1,0 +1,3 @@
+connector Flange_v2_out "Two-dimensions causual mechanic connector with only velocity"
+  output Modelica.Units.SI.Velocity vcx, vcy "[m/s] Vehicle coordinate wheel speed (information transfer from models)";
+end Flange_v2_out;

@@ -1,0 +1,58 @@
+model Instance_Sprung
+  import g = Modelica.Constants.g_n;
+  import Modelica.Units.SI.*;
+  import FVM.variables.*;
+  import Modelica.Mechanics.Translational.Interfaces.Flange_a;
+  import FVM.comps.Flange_a2_in;
+  import FVM.comps.Flange_an1_out;
+  import FVM.comps.Flange_an2_out;
+  
+  parameter Force sprung_fz = m_sprung * g "[N] Force equivalent to sprung chassis weight";
+  
+  Flange_a FL_fix, FR_fix, RL_fix, RR_fix;
+  
+  AngularAcceleration alphax(start = 0) "[rad/s2] Angular acceleration in X-axis (roll) of sprung chassis";
+  AngularAcceleration alphay(start = 0) "[rad/s2] Angular acceleration in Y-axis (pitch) of sprung chassis";
+  AngularVelocity rx "[rad/s] Angular velocity in X-axis (roll) of sprung chassis";
+  AngularVelocity ry "[rad/s] Angular velocity in Y-axis (pitch) of sprung chassis";
+  Angle roll "[rad] Angular displacement in X-axis of sprung chassis";
+  Angle pitch "[rad] Angular displacement in Y-axis of sprung chassis";
+  Acceleration az(start = g) "AA[m/s2] Acceleration in Z-axis of CG (heave)";
+  Velocity vz "[m/s] Velocity in Z-axis of CG (heave)";
+  Position hCG "[m] Height (Z-axis position) of CG (heave)";
+  Acceleration ax(start = 0) "[m/s2] Acceleration in X-axis of CG (forward motion)";
+  Acceleration ay(start = 0) "[m/s2] Acceleration in Y-axis of CG (turning motion)";
+  
+  Flange_a2_in CG_acc;
+  Flange_an2_out sprung_angles;
+  
+initial equation
+  rx = 0;
+  ry = 0;
+  roll = 0;
+  pitch = 0;
+  vz = 0;
+  
+equation
+  der(roll) = rx;
+  der(pitch) = ry;
+  der(rx) = alphax;
+  der(ry) = alphay;
+  der(hCG) = vz;
+  der(vz) = az;
+  ((FR_fix.s + FL_fix.s) / 2 - (RL_fix.s + RR_fix.s) / 2) / l = -sin(pitch);
+  ((FL_fix.s + RL_fix.s) / 2 - (FR_fix.s + RR_fix.s) / 2) / ((tf + tr) / 2) = -sin(roll);
+  hCG = (FL_fix.s + FR_fix.s) / 2 + a * sin(pitch) - hhCG * cos(roll) * cos(pitch);
+  FL_fix.s + (tf / 2) * sin(roll) + a * sin(pitch) = RL_fix.s + (tr / 2) * sin(roll) - b * sin(pitch);
+  FL_fix.f + FR_fix.f + RL_fix.f + RR_fix.f + sprung_fz = m_sprung * az;
+  ax * m_sprung * (hhCG * cos(roll) * cos(pitch) - a * sin(pitch)) + sprung_fz * (a * cos(pitch) + hhCG * sin(pitch) * cos(roll)) + (l * cos(pitch) + tr / 2 * sin(roll) * sin(pitch)) * RL_fix.f + (l * cos(pitch) - tr / 2 * sin(roll) * sin(pitch)) * RR_fix.f + tf / 2 * sin(roll) * sin(pitch) * FL_fix.f - tf / 2 * sin(roll) * sin(pitch) * FR_fix.f = Iy * alphay;
+  - ay * m_sprung * hhCG * cos(roll) + sprung_fz * hhCG * sin(roll) * cos(pitch) - tr / 2 * cos(roll) * cos(pitch) * RL_fix.f + tr / 2 * cos(roll) * cos(pitch) * RR_fix.f - tf / 2 * cos(roll) * cos(pitch) * FL_fix.f + tf / 2 * cos(roll) * cos(pitch) * FR_fix.f = Ix * alphax;
+  //ax * m_sprung * hhCG + sprung_fz * a + (RL_fix.f + RR_fix.f) * l = Iy * alphay;
+  //- ay * m_sprung * hhCG + (FR_fix.f - FL_fix.f) * (tf/2) + (RR_fix.f - RL_fix.f) * (tr/2) = Ix * alphax;
+  
+//Model info transfer
+  CG_acc.ax = ax;
+  CG_acc.ay = ay;
+  sprung_angles.roll = roll;
+  sprung_angles.pitch = pitch;
+end Instance_Sprung;

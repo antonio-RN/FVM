@@ -1,0 +1,3 @@
+connector Flange_an2_in "Two-dimensions causual mechanic connector with only angles"
+  input Modelica.Units.SI.Angle roll, pitch "[rad] Sprung body rotation around its X- and Y-axis (information transfer from models)";
+end Flange_an2_in;

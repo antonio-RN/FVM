@@ -1,0 +1,93 @@
+model Instance_Chassis
+  import Modelica.Units.SI.*;
+  import FVM.variables.*;
+  import FVM.comps.Flange_f2_in;
+  import FVM.comps.Flange_t1_in;
+  import FVM.comps.Flange_an1_out;
+  import FVM.comps.Flange_t2_out;
+  import FVM.comps.Flange_v2_out;
+  import FVM.comps.Flange_a2_out;
+  import FVM.comps.Flange_an2_in;
+  
+  parameter Mass m_total = m_sprung + 2 * m_unsprung_f + 2 * m_unsprung_r "[kg] Total vehicle mass, including sprung weight and each unsprung weight";
+  
+  Acceleration ax "[m/s2] Longitudinal acceleration of whole chassis caused by drivetrain / brake action on tires";
+  Acceleration ay "[m/s2] Lateral acceleration of whole chassis caused by steering action on tires";
+  AngularAcceleration alphaz(start = 0) "[rad/s2] Angular acceleration in Z-axis (yaw) of full chassis";
+  AngularVelocity rz "[rad/s] Angular velocity in Z-axis (yaw) of full chassis";
+  Angle yaw "[rad] Angular displacement in Z-axis of full chassis";
+  Velocity vx "[m/s] Velocity in X-axis of CG (forward motion)";
+  Velocity vy "[m/s] Velocity in Y-axis of CG (turning motion)";
+  Angle beta "[rad] Slip angle of whole vehicle at CG";
+  
+  Flange_f2_in FL_chassis_fix2, FR_chassis_fix2, RL_chassis_fix2, RR_chassis_fix2 "Input flange for chassis connection, acasual for info
+ transfer with chassis model (fx, fy)";
+  Flange_t1_in FL_chassis_fix, FR_chassis_fix, RL_chassis_fix, RR_chassis_fix "Input flange for chassis connection, acasual for info transfer with chassis model (mz)";
+  Flange_an2_in sprung_angles "Output flange for suspensions connection, acasual for info transfer with suspension model (pitch, roll)";
+  Flange_an1_out FL_steering, FR_steering, RL_steering, RR_steering "Output flange for steering connection, acasual for info transfer with steering model (delta)";
+  Flange_t2_out FL_drivetrain, FR_drivetrain, RL_drivetrain, RR_drivetrain "Output flange for drivetrain connection, acasual for info transfer with drivetrain model (Td, Tr)";
+  Flange_v2_out FL_speed, FR_speed, RL_speed, RR_speed "Output flange for chassis connection, acasual for info transfer with chassis model (vcx, vcy)"; 
+  Flange_a2_out CG_acc "Output flange for chassis connection, acasual for info
+ transfer with chassis model (ax, ay)";
+ 
+initial equation
+  rz = 0;
+  yaw = 0;
+  vx = variables.vx_0;
+  vy = 0;
+  
+equation
+//Basic derivatives of rotation movement
+  der(yaw) = rz;
+  der(rz) = alphaz;
+  
+//Vehicle acceleration counting axis system movement due to yaw change
+  der(vx) - rz * vy = ax;
+  der(vy) + rz * vx = ay;
+  beta = -atan(vy / (vx + epsilon));
+  
+//Front steering input (in rad), positive to the left. Simplification (same for front left and front right wheels)
+  FL_steering.delta = input_delta;
+  FR_steering.delta = FL_steering.delta;
+  
+//Simplification of no rear-wheel steering (rear left and rear right wheel steering angles = 0)
+  RL_steering.delta = 0;
+  RR_steering.delta = RL_steering.delta;
+  
+//Front drivetrain torque. Simplification (same for front left and front right wheels)
+  FL_drivetrain.Td = input_torque_FWD;
+  FR_drivetrain.Td = FL_drivetrain.Td;
+  
+//Rear drivetrain torque (in Nm)
+  RL_drivetrain.Td = input_torque_RWD;
+  RR_drivetrain.Td = RL_drivetrain.Td;
+  
+//Provisional input for brake torque
+  FL_drivetrain.Tr = input_torque_Fr_brake;
+  FR_drivetrain.Tr = FL_drivetrain.Tr;
+  RL_drivetrain.Tr = input_torque_Re_brake;
+  RR_drivetrain.Tr = RL_drivetrain.Tr;
+  
+//Wheel velocity at wheel center (in vehicle coordinates)
+  FL_speed.vcx = vx + rz * (tf / 2);
+  FR_speed.vcx = vx - rz * (tf / 2);
+  RL_speed.vcx = vx + rz * (tr / 2);
+  RR_speed.vcx = vx - rz * (tr / 2);
+  FL_speed.vcy = vy + rz * a;
+  FR_speed.vcy = vy + rz * a;
+  RL_speed.vcy = vy - rz * b;
+  RR_speed.vcy = vy - rz * b;
+  
+//sum(F) = m * a (in X- and Y-axis)
+  FL_chassis_fix2.fx + FR_chassis_fix2.fx + RL_chassis_fix2.fx + RR_chassis_fix2.fx = m_total * ax;
+  FL_chassis_fix2.fy + FR_chassis_fix2.fy + RL_chassis_fix2.fy + RR_chassis_fix2.fy = m_total * ay;
+  
+//sum(M) = I * alpha (in Z-axis)
+  //FL_chassis_fix2.fx * cos(sprung_angles.roll) * (tf / 2) - FR_chassis_fix2.fx * cos(sprung_angles.roll) * (tf / 2) + RL_chassis_fix2.fx * cos(sprung_angles.roll) * (tr / 2) - RR_chassis_fix2.fx * cos(sprung_angles.roll) * (tr / 2) + (FL_chassis_fix2.fy + FR_chassis_fix2.fy) * cos(sprung_angles.pitch) * a - (RL_chassis_fix2.fy + RR_chassis_fix2.fy) * cos(sprung_angles.pitch) * b + FL_chassis_fix.mz + FR_chassis_fix.mz + RL_chassis_fix.mz + RR_chassis_fix.mz = Iz * alphaz;
+  //SIMPLIFICACION PRUEBAS
+  (FL_chassis_fix2.fy + FR_chassis_fix2.fy)  * variables.a - (RL_chassis_fix2.fy + RR_chassis_fix2.fy)  * variables.b + FL_chassis_fix2.fx * variables.tf / 2 + RL_chassis_fix2.fx * variables.tr / 2 - FR_chassis_fix2.fx * variables.tf / 2 - RR_chassis_fix2.fx * variables.tr / 2 + FL_chassis_fix.mz + FR_chassis_fix.mz + RL_chassis_fix.mz + RR_chassis_fix.mz = Iz * alphaz;
+  
+  //Model info transfer
+  CG_acc.ax = ax;
+  CG_acc.ay = ay;
+end Instance_Chassis;

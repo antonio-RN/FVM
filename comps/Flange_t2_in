@@ -1,0 +1,3 @@
+connector Flange_t2_in "Two-dimensions causual mechanic connector with only moments"
+  input Modelica.Units.SI.Torque Td, Tr "[Nm] Drivetrain and resisting torque (information transfer from models)";
+end Flange_t2_in;

@@ -1,46 +1,78 @@
 model Quarter_Wheel
-  import Modelica.Units.SI.*;
-  import FVM.variables.*;
-  AngularVelocity omega(start = 0) "[rad/s] Angular speed of wheel";
-  Torque Td(start = 0) "[Nm] Torque coming from the drivetrain";
-  Torque Tr(start = 0) "[Nm] Rolling resistance moment of the tire";
-  Force Nz(start = 0) "[N] Vertical load on tire, coming from suspension Full_Susp model";
-  parameter MomentOfInertia Ir = 1 "[kg m2] Rotational inertia of wheel";
-  Angle delta(start = 0) "[rad] Steering angle measured from the vehicle centerline";
-  Angle alpha(start = 0) "[rad] Slip angle measured as the difference between the wheel heading direction and the wheel velocity vector";
-  Velocity vcx "[m/s] Longitudinal velocity of wheel -at wheel center- in vehicle coordinates";
-  Velocity vcy "[m/s] Lateral velocity of wheel -at wheel center- in vehicle coordinates";
-  Velocity vx "[m/s] Longitudinal velocity of wheel -at wheel center- in wheel coordinates";
-  Velocity vy "[m/s] Lateral velocity of wheel -at wheel center- in wheel coordinates";
-  Force fcx(start = 0) "[N] Longitudinal force generated from the tire in vehicle coordinates";
-  Force fcy(start = 0) "[N] Lateral force generated from the tire in vehicle coordinates";
-  Force fx(start = 0) "[N] Longitudinal force generated from the tire in wheel coordinates";
-  Force fy(start = 0) "[N] Lateral force generated from the tire in wheel coordinates";
-  MomentOfForce mz(start = 0) "[Nm] Moment around the vertical axis Z from the tire (self-aligning torque)";
-  Real alpha_adim(start = 0) "Lateral slip, defined as the slip angle adimensionalized via tan(alpha) for Magic Formula use";
-  Real k_adim(start = 0) "Slip ratio defined as the difference in speed between wheel center and tire contact point";
+ import Modelica.Constants.pi;
+ import Modelica.Units.SI.*;
+ import FVM.variables.*;
+ import FVM.comps.Flange_f2_out;
+ import FVM.comps.Flange_t1_out;
+ import FVM.comps.Flange_f1_in;
+ import FVM.comps.Flange_an1_in;
+ import FVM.comps.Flange_t2_in;
+ import FVM.comps.Flange_v2_in;
+ 
+ AngularVelocity omega(start = 0) "[rad/s] Angular speed of wheel";
+ Torque Td(start = 0) "[Nm] Torque coming from the drivetrain";
+ Torque Tr(start = 0) "[Nm] Resisting torque coming from the brakes";
+ Torque Trr(start = 0) "[Nm] Rolling resistance moment of the tire";
+ Force Nz(start = 0) "[N] Vertical load on tire, coming from suspension Full_Susp model";
+ parameter MomentOfInertia Ir = 1 "[kg m2] Rotational inertia of wheel";
+ Angle delta(start = 0) "[rad] Steering angle measured from the vehicle centerline";
+ Angle alpha(start = 0) "[rad] Slip angle measured as the difference between the wheel heading direction and the wheel velocity vector";
+ Velocity vcx "[m/s] Longitudinal velocity of wheel -at wheel center- in vehicle coordinates";
+ Velocity vcy "[m/s] Lateral velocity of wheel -at wheel center- in vehicle coordinates";
+ Velocity vx "[m/s] Longitudinal velocity of wheel -at wheel center- in wheel coordinates";
+ Velocity vy "[m/s] Lateral velocity of wheel -at wheel center- in wheel coordinates";
+ Force fcx(start = 0) "[N] Longitudinal force generated from the tire in vehicle coordinates";
+ Force fcy(start = 0) "[N] Lateral force generated from the tire in vehicle coordinates";
+ Force fx(start = 0) "[N] Longitudinal force generated from the tire in wheel coordinates";
+ Force fy(start = 0) "[N] Lateral force generated from the tire in wheel coordinates";
+ MomentOfForce mz(start = 0) "[Nm] Moment around the vertical axis Z from the tire (self-aligning torque)";
+ Real alpha_adim(start = 0) "Lateral slip, defined as the slip angle adimensionalized via tan(alpha) for Magic Formula use";
+ Real k_adim(start = 0) "Slip ratio defined as the difference in speed between wheel center and tire contact point";
+ 
+ Flange_f2_out chassis_fix2 "Output flange for chassis connection, acasual for info transfer with chassis model (fx, fy)";
+ Flange_t1_out chassis_fix1 "Output flange for chassis connection, acasual for info transfer with chassis model (mz)";
+ Flange_f1_in tire_load "Input flange for vertical load acting on the tire, acasual for info tranasfer with wheel model (fz)";
+ Flange_an1_in steering "Input flange for steering connection, acasual for info transfer with steering model (delta)";
+ Flange_t2_in drivetrain "Input flange for drivetrain connection, acasual for info transfer with drivetrain model (Td, Tr)";
+ Flange_v2_in speed "Input flange for chassis connection, acasual for info transfer with chassis model (vcx, vcy)";
+ 
 initial equation
-  vcx = 0;
-  vcy = 0;
-  vx = 0;
-  vy = 0;
+  vcx = variables.vx_0;
+  
 equation
 //Coordinate change from global vehicle to local wheel
-  vx = vcx * cos(delta) - vcy * sin(delta);
-  vy = vcx * sin(delta) + vcy * cos(delta);
+ vx = vcx * cos(delta) - vcy * sin(delta);
+ vy = vcx * sin(delta) + vcy * cos(delta);
+ 
 //Longitudinal and side slip calculation
-  k_adim = -(vx - re * omega) / abs(vx + epsilon);
-  alpha = -atan(vy / (vx + epsilon));
-  alpha_adim = tan(alpha) * sign(vx);
+ k_adim = -(vx - re * omega) / abs(vx + epsilon);
+ tan(alpha) = (- vy / vx) * sign(vx);
+ alpha_adim = tan(alpha);
+ 
 //Tire force and moment generation via Magic Formula
-  fx = Tire_force(fz = Nz, B = Bx, C = Cx, D = Dx, E = Ex, x = k_adim);
-  fy = Tire_force(fz = Nz, B = By, C = Cy, D = Dy, E = Ey, x = alpha_adim);
-  mz = Tire_moment(a_adim = alpha_adim, t0 = t0, fy = fy);
+ fx = Tire_force(fz = Nz, B = Bx, C = Cx, D = Dx, E = Ex, x = k_adim);
+ fy = Tire_force(fz = Nz, B = By, C = Cy, D = Dy, E = Ey, x = alpha);
+ mz = Tire_moment(a_adim = alpha_adim, t0 = t0, fy = fy);
+ 
 //Coordinate change from local wheel to global vehicle
-  fcx = fx * cos(delta) + fy * sin(delta);
-  fcy = (-fx * sin(delta)) + fy * cos(delta);
+ fcx = fx * cos(delta) + fy * sin(delta);
+ fcy = (-fx * sin(delta)) + fy * cos(delta);
+ 
 //Rolling resistance moment
-  Tr = kr * vx * Nz;
+ Trr = kr * vx * Nz;
+ 
 //sum(M) = I * alpha
-  Td - fx * re - Tr = Ir * der(omega);
+//REVISAR fx * re necesario o = rolling resistance
+ Td - Tr - fx * re - Trr = Ir * der(omega);
+ 
+//Model info transfer
+ chassis_fix2.fx = fcx;
+ chassis_fix2.fy = fcy;
+ chassis_fix1.mz = mz;
+ tire_load.fz = -Nz;
+ steering.delta = delta;
+ drivetrain.Td = Td;
+ drivetrain.Tr = Tr;
+ speed.vcx = vcx;
+ speed.vcy = vcy;
 end Quarter_Wheel;

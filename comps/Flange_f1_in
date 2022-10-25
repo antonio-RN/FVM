@@ -1,0 +1,3 @@
+connector Flange_f1_in "One-dimension causual mechanic connector with only force"
+  input Modelica.Units.SI.Force fz "[N] Vertical force (information transfer from models)";
+end Flange_f1_in;

@@ -1,0 +1,12 @@
+model FVM_sim
+  FVM.Full_Chassis Chassis;
+  FVM.Full_Susp Suspension;
+  
+equation
+  connect(Chassis.FL_tire_load, Suspension.FL_tire_load);
+  connect(Chassis.FR_tire_load, Suspension.FR_tire_load);
+  connect(Chassis.RL_tire_load, Suspension.RL_tire_load);
+  connect(Chassis.RR_tire_load, Suspension.RR_tire_load);
+  connect(Chassis.sprung_angles, Suspension.sprung_angles);
+  connect(Chassis.CG_acc, Suspension.CG_acc);
+end FVM_sim;

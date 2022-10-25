@@ -1,0 +1,3 @@
+connector Flange_an1_out "One-dimension causual mechanic connector with only angle"
+  output Modelica.Units.SI.Angle delta "[rad] Wheel turning angle (information transfer from models)";
+end Flange_an1_out;

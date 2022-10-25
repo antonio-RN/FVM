@@ -1,0 +1,3 @@
+connector Flange_a2_in "Two-dimensions causual mechanic connector with only acceleration"
+  input Modelica.Units.SI.Acceleration ax, ay "[m/s] Vehicle CoG longitudinal and lateral acceleration (information transfer from models)";
+end Flange_a2_in;

@@ -1,0 +1,3 @@
+connector Flange_f2_in "Two-dimensions causual mechanic connector with only forces"
+  input Modelica.Units.SI.Force fx, fy "[N] Longitudinal and lateral forces (information transfer from models)";
+end Flange_f2_in;
