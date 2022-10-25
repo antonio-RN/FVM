@@ -20,15 +20,13 @@ model Instance_Chassis
   Velocity vy "[m/s] Velocity in Y-axis of CG (turning motion)";
   Angle beta "[rad] Slip angle of whole vehicle at CG";
   
-  Flange_f2_in FL_chassis_fix2, FR_chassis_fix2, RL_chassis_fix2, RR_chassis_fix2 "Input flange for chassis connection, acasual for info
- transfer with chassis model (fx, fy)";
+  Flange_f2_in FL_chassis_fix2, FR_chassis_fix2, RL_chassis_fix2, RR_chassis_fix2 "Input flange for chassis connection, acasual for info transfer with chassis model (fx, fy)";
   Flange_t1_in FL_chassis_fix, FR_chassis_fix, RL_chassis_fix, RR_chassis_fix "Input flange for chassis connection, acasual for info transfer with chassis model (mz)";
   Flange_an2_in sprung_angles "Output flange for suspensions connection, acasual for info transfer with suspension model (pitch, roll)";
   Flange_an1_out FL_steering, FR_steering, RL_steering, RR_steering "Output flange for steering connection, acasual for info transfer with steering model (delta)";
   Flange_t2_out FL_drivetrain, FR_drivetrain, RL_drivetrain, RR_drivetrain "Output flange for drivetrain connection, acasual for info transfer with drivetrain model (Td, Tr)";
   Flange_v2_out FL_speed, FR_speed, RL_speed, RR_speed "Output flange for chassis connection, acasual for info transfer with chassis model (vcx, vcy)"; 
-  Flange_a2_out CG_acc "Output flange for chassis connection, acasual for info
- transfer with chassis model (ax, ay)";
+  Flange_a2_out CG_acc "Output flange for chassis connection, acasual for info transfer with chassis model (ax, ay)";
  
 initial equation
   rz = 0;
