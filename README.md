@@ -12,7 +12,7 @@ The system uses a coordinate system fixed to the vehicle CG ground projection. X
 
 The full model comprises 2 sub-models:
 
-- Independent wheel suspension (*Quarter_Susp*): fully vertical suspension (Z-axis) susb-system with the main mechanical elements represented by their mathematical 1D counterpart. Four instances of this sub-model make the full suspension system (*Full_Susp*), wich takes into account the sprung body rotation (X- and Y-axis) and vertical suspension work (Z-axis). From ground to upper joint:
+- Independent wheel suspension (*Quarter_Susp*): fully vertical suspension (Z-axis) sub-system with the main mechanical elements represented by their mathematical 1D counterpart. Four instances of this sub-model make the full suspension system (*Full_Susp*), wich takes into account the sprung body rotation (X- and Y-axis) and vertical suspension work (Z-axis). From ground to upper joint:
 
   - Tire: spring-damper assembly always connected to ground (z=0).
 
@@ -20,7 +20,7 @@ The full model comprises 2 sub-models:
 
   - Suspension coil / damper: main spring and damper actuators, in parallel and the same lenght end-to-end. Upper joint is the chassis fixing point.
 
-- Intependent rotating wheel and tire (*Quarter_Wheel*): sub-system that takes into account wheel rotational inertia, drivetrain / brakes moments applied to wheel and tire force / moment generation. This last part is based on a simplified Pacejka Magic Formula v6.1, calculated with constant coefficients that takes the normal load from the suspensions sub-system. Four instances of this sub-model make the full chassis system (*Full_Chassis*), which takes into account the whole vehicle translational movements (X- and Y-axis) and yaw attitude (Z-axis rotation).
+- Intependent rotating wheel and tire (*Quarter_Wheel*): sub-system that takes into account wheel rotational inertia, drivetrain / brakes moments applied to wheel and tire force / moment generation. This last part is based on a simplified Pacejka Magic Formula v6.1, calculated with constant coefficients that takes the normal load from the suspensions sub-system. Four instances of this sub-model make the full chassis system (*Full_Chassis*), which takes into account the whole vehicle translational movements (X- and Y-axis) and yaw attitude (Z-axis rotation)
 
 ## Model limits
 
@@ -46,5 +46,5 @@ This list will be updated with coming model improvements.
 
 ## Model usage
 
-Most of vehicle properties are contained within *variables* file. Basic input for simulation (e.g. torque applied to wheels, wheel rotation speed) is defined there also. 
+Most of vehicle properties are contained within *variables* file. Basic input for simulation (e.g. torque applied to wheels, wheel rotation speed) is defined there also (*input* section at the end), as well as initial longitudinal speed. 
 *FVM_sim* file must be the model simulated within OpenModelica.
